@@ -1,9 +1,7 @@
-import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, unquote
 import json
 from pymongo import MongoClient
-import traceback  # <-- added import
 
 class CarRequestHandler(BaseHTTPRequestHandler):
     def _set_headers(self, status_code=200):
@@ -70,8 +68,6 @@ class CarRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'Endpoint not found'}).encode())
         
         except Exception as e:
-            print("Error:", e)           # <-- print error message
-            traceback.print_exc()        # <-- print full traceback
             self._set_headers(500)
             self.wfile.write(json.dumps({'error': str(e)}).encode())
 
