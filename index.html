@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* General body styling */
+    /* General body styling */
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: url('rear-semi-truck-wheels-tires-260nw-2167645831.webp') no-repeat center center/cover;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: #333;
+  filter: grayscale(50%);
+  position: relative;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Dark overlay */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: -1;
+}
+/* Container */
+.container {
+  max-width: 450px;
+  margin: 100px auto 50px;
+  padding: 30px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease;
+}
+
+.container:hover {
+  transform: translateY(-5px);
+}
+
+/* Form group */
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3a7bd5;
+}
+
+select, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+select {
+  background-color: #fafafa;
+  cursor: pointer;
+}
+
+select:focus {
+  border-color: #3a7bd5;
+  outline: none;
+}
+
+button {
+  background-color: #3a7bd5;
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(58, 123, 213, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #356ab5;
+}
+
+/* Car info display */
+.car-info {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-left: 4px solid #3a7bd5;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: none;
+  animation: fadeIn 0.5s ease;
+}
+
+.car-info.show {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 500px) {
+  .container {
+    width: 85%;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  select, button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .car-info {
+    padding: 15px;
+  }
+
+  .car-info p {
+    font-size: 14px;
+  }
+}
+
+
+  </style>
+  <title>Car Model Selection</title>
+</head>
+<body>
+<div class="container">
+  <h1>Select Your Car Model</h1>
+  
+  <div class="form-group">
+    <label for="brand">Select Brand:</label>
+    <select id="brand" onchange="populateModels()">
+      <option value="" disabled selected>Select Brand</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="model">Select Model:</label>
+    <select id="model" disabled>
+      <option value="" disabled selected>Select Model</option>
+    </select>
+  </div>
+
+  <button id="showButton" onclick="displayCarData()">Show</button>
+
+  <div class="car-info" id="carInfo">
+    <h2>Car Specifications</h2>
+    <p><strong>Pressure:</strong> <span id="pressure">-</span> psi</p>
+    <p><strong>Temperature:</strong> <span id="temperature">-</span> °C</p>
+    <p><strong>Load:</strong> <span id="load">-</span> kg</p>
+    <p><strong>Tread Depth:</strong> <span id="treadDepth">-</span> mm</p>
+  </div>
+</div>
+
+<script>
+  const brandSelect = document.getElementById('brand');
+const modelSelect = document.getElementById('model');
+const carInfo = document.getElementById('carInfo');
+const showButton = document.getElementById('showButton');
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', populateBrands);
+
+// Fetch brands
+async function populateBrands() {
+    try {
+        console.log("Fetching brands...");
+        const response = await fetch('http://127.0.0.1:5050/api/brands');
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const brands = await response.json();
+        console.log("Received brands:", brands);
+
+        brandSelect.innerHTML = '<option value="" disabled selected>Select Brand</option>';
+        brands.forEach(brand => {
+            const option = document.createElement('option');
+            option.value = brand;
+            option.textContent = brand;
+            brandSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Brand loading failed:", error);
+        brandSelect.innerHTML = '<option value="" disabled selected>Error loading brands</option>';
+    }
+}
+
+// Fetch models
+async function populateModels() {
+    const brand = brandSelect.value.trim();
+    if (!brand) return;
+
+    try {
+        console.log(`Fetching models for ${brand}...`);
+        modelSelect.disabled = true;
+        modelSelect.innerHTML = '<option value="" disabled selected>Loading models...</option>';
+        
+        const response = await fetch(`http://127.0.0.1:5050/api/models/${encodeURIComponent(brand)}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const models = await response.json();
+        console.log(`Received models for ${brand}:`, models);
+
+        modelSelect.innerHTML = '<option value="" disabled selected>Select Model</option>';
+        models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            modelSelect.appendChild(option);
+        });
+        
+        modelSelect.disabled = false;  // Enable the dropdown
+    } catch (error) {
+        console.error("Model loading failed:", error);
+        modelSelect.innerHTML = '<option value="" disabled selected>Error loading models</option>';
+    }
+}
+
+// Display car data
+async function displayCarData() {
+    const brand = brandSelect.value.trim();
+    const model = modelSelect.value.trim();
+    
+    if (!brand || !model || model === "Select Model") {
+        alert("Please select both brand and model");
+        return;
+    }
+
+    try {
+        console.log(`Fetching data for ${brand} ${model}...`);
+        showButton.disabled = true;
+        showButton.textContent = "Loading...";
+        carInfo.classList.remove('show');
+        
+        const response = await fetch(
+            `http://127.0.0.1:5050/api/car/${encodeURIComponent(brand)}/${encodeURIComponent(model)}`
+        );
+        console.log("Response status:", response.status);
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        console.log("Received car data:", data);
+
+        if (data.error) throw new Error(data.error);
+
+        // Update the UI
+        document.getElementById('pressure').textContent = data.pressure ?? '-';
+        document.getElementById('temperature').textContent = data.temperature ?? '-';
+        document.getElementById('load').textContent = data.load ?? '-';
+        document.getElementById('treadDepth').textContent = data.treadDepth ?? '-';
+
+        // Show car info
+        carInfo.classList.add('show');
+        console.log("Data displayed successfully!");
+        
+    } catch (error) {
+        console.error("Error fetching car data:", error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        showButton.disabled = false;
+        showButton.textContent = "Show";
+    }
+}
+
+// Event listeners
+brandSelect.addEventListener('change', populateModels);
+showButton.addEventListener('click', displayCarData);
+</script>
+</body>
+</html>
